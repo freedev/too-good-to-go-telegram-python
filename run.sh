@@ -8,7 +8,7 @@ function my_readlink() {
        echo $(cd -P -- "$(dirname -- "$0")" && printf '%s\n' "$(pwd -P)")
        ;;
     linux*)
-       echo $(readlink -f $1)
+       echo $(readlink -f $(dirname -- "$0"))
         ;;
     bsd*)     echo "BSD" ;;
     *)        echo "unknown: $OSTYPE" ;;
