@@ -5,3 +5,5 @@ OFFERS_HASH_FNAME='hash-%s.json'
 USERS = [
   UserData('pinco.pallino@gmail.com', 45.471726, 9.160774, 1000)
 ]
+
+TELEGRAM_TOKEN="XXXXXXX"
