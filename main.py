@@ -69,7 +69,5 @@ async def main():
       except TgtgPollingError as e:
         os.remove(credentials_fname)
 
-    # print(items)
-
 if __name__ ==  '__main__':
     loop.run_until_complete(main())
