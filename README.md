@@ -1,7 +1,7 @@
 # Togoodtogo notification 
 
 ## TL;DR
-This simple script helps out you to get notification from togoodtogo when new offers appears from your favorite list.
+This simple script helps to get notification from togoodtogo when new offers appears from favorite list.
 
 ## Description
 Once you have added all the users email in the file `constant.py` the file `get-credentials.py` can be invoked: users credentials will be stored locally.
