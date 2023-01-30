@@ -11,6 +11,9 @@ from constants import TELEGRAM_TOKEN
 from telegram import Bot
 
 loop = asyncio.get_event_loop()
+if loop == None:
+  loop = asyncio.new_event_loop()
+  asyncio.set_event_loop(loop)
 
 def get_offers(client: TgtgClient, user: UserData):
   offers = []
