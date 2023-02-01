@@ -47,6 +47,10 @@ def user_has_newer_offers(offers: list, user: UserData):
       has_offers=True
   return has_offers
 
+async def send_message(chat_id, msg):
+  bot = Bot(TELEGRAM_TOKEN)
+  await bot.send_message(chat_id=chat_id, text=msg)
+
 async def main():
   for user in USERS:
     credentials_fname = CREDENTIALS_FNAME % user.email
@@ -63,14 +67,16 @@ async def main():
             if offer.is_new:
               msg=offer.description
               print(offer.description)
-              bot = Bot(TELEGRAM_TOKEN)
-              await bot.send_message(chat_id=user.chat_id, text=msg)
+              await send_message(user.chat_id, msg)
       except TgtgAPIError as e:
         os.remove(credentials_fname)
+        await send_message(user.chat_id, f'user {user.email} TgtgAPIError')
       except TgtgLoginError as e:
         os.remove(credentials_fname)
+        await send_message(user.chat_id, f'user {user.email} TgtgLoginError')
       except TgtgPollingError as e:
         os.remove(credentials_fname)
+        await send_message(user.chat_id, f'user {user.email} TgtgPollingError')
 
 if __name__ ==  '__main__':
     loop.run_until_complete(main())
