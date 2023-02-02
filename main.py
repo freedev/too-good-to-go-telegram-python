@@ -36,8 +36,8 @@ def user_has_newer_offers(offers: list, user: UserData):
   print(f'offers len: {len(offers)}')
   for offer in offers:
     hash_fname = normalize_filename(OFFERS_HASH_FNAME % (user.email, offer.description))
-    print(f'offer: {offer.description} availability {offer.availability}')
     if offer.availability > 0:
+      print(f'offer: {offer.description} availability {offer.availability}')
       hash_offer = str(hashlib.md5(offer.description.encode()).hexdigest())
       if os.path.isfile(hash_fname):
         with open(hash_fname, 'r') as f:
