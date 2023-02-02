@@ -25,26 +25,31 @@ def get_offers(client: TgtgClient, user: UserData):
         # radius=user.radius,
     )
     for item in items:
-      if item['items_available'] > 0:
-        offer = Offer(item['item']['item_id'], item['display_name'], item['items_available'])
-        offers.append(offer)
+      offer = Offer(item['item']['item_id'], item['display_name'], item['items_available'])
+      offers.append(offer)
   return offers
+
+def file_remove(filename: str):
+  if os.path.exists(filename): os.remove(filename)
 
 def user_has_newer_offers(offers: list, user: UserData):
   has_offers=False
   for offer in offers:
-    hash_offer = str(hashlib.md5(offer.description.encode()).hexdigest())
     hash_fname = OFFERS_HASH_FNAME % (user.email, hash_offer)
-    if os.path.isfile(hash_fname):
-      with open(hash_fname, 'r') as f:
-        old_hash_offers = json.load(f)
+    if offer.availability > 0:
+      file_remove(hash_fname)
     else:
-      old_hash_offers = ''
-    if old_hash_offers != hash_offer:
-      with open(hash_fname, 'w') as f:
-        f.write(json.dumps(hash_offer))
-        offer.is_new=True
-      has_offers=True
+      hash_offer = str(hashlib.md5(offer.description.encode()).hexdigest())
+      if os.path.isfile(hash_fname):
+        with open(hash_fname, 'r') as f:
+          old_hash_offers = json.load(f)
+      else:
+        old_hash_offers = ''
+      if old_hash_offers != hash_offer:
+        with open(hash_fname, 'w') as f:
+          f.write(json.dumps(hash_offer))
+          offer.is_new=True
+        has_offers=True
   return has_offers
 
 async def send_message(chat_id, msg):
@@ -69,13 +74,13 @@ async def main():
               print(offer.description)
               await send_message(user.chat_id, msg)
       except TgtgAPIError as e:
-        os.remove(credentials_fname)
+        file_remove(credentials_fname)
         await send_message(user.chat_id, f'user {user.email} TgtgAPIError')
       except TgtgLoginError as e:
-        os.remove(credentials_fname)
+        file_remove(credentials_fname)
         await send_message(user.chat_id, f'user {user.email} TgtgLoginError')
       except TgtgPollingError as e:
-        os.remove(credentials_fname)
+        file_remove(credentials_fname)
         await send_message(user.chat_id, f'user {user.email} TgtgPollingError')
 
 if __name__ ==  '__main__':
