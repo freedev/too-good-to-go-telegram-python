@@ -10,6 +10,8 @@ from urllib.parse import quote
 from constants import TELEGRAM_TOKEN
 from telegram import Bot
 
+from common import file_remove, normalize_filename
+
 loop = asyncio.get_event_loop()
 if loop == None:
   loop = asyncio.new_event_loop()
@@ -29,14 +31,11 @@ def get_offers(client: TgtgClient, user: UserData):
       offers.append(offer)
   return offers
 
-def file_remove(filename: str):
-  if os.path.exists(filename): os.remove(filename)
-
 def user_has_newer_offers(offers: list, user: UserData):
   has_offers=False
   print(f'offers len: {len(offers)}')
   for offer in offers:
-    hash_fname = OFFERS_HASH_FNAME % (user.email, hash_offer)
+    hash_fname = normalize_filename(OFFERS_HASH_FNAME % (user.email, hash_offer))
     print(f'offer: {offer.description} availability {offer.availability}')
     if offer.availability > 0:
       hash_offer = str(hashlib.md5(offer.description.encode()).hexdigest())
@@ -60,7 +59,7 @@ async def send_message(chat_id, msg):
 
 async def main():
   for user in USERS:
-    credentials_fname = CREDENTIALS_FNAME % user.email
+    credentials_fname = normalize_filename(CREDENTIALS_FNAME % user.email)
     if os.path.isfile(credentials_fname):
       with open(credentials_fname, 'r') as f:
         credentials = json.load(f)
