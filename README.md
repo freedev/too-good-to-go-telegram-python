@@ -1,4 +1,4 @@
-# Togoodtogo notification 
+# Too Good To Go notification 
 
 ## TL;DR
 
