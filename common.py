@@ -1,4 +1,6 @@
 import os
+from user_data import UserData
+from constants import CREDENTIALS_FNAME, OFFERS_HASH_FNAME
 
 def normalize_filename(fn):
     validchars = "-_.() "
@@ -18,3 +20,5 @@ def file_remove(fn: str):
   else:
     print(f'filename does not exist {filename}')
 
+def get_credentials_fname(user: UserData):
+    credentials_fname = CREDENTIALS_FNAME % user.email
