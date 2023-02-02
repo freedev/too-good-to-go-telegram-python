@@ -79,7 +79,7 @@ async def get_tgtg_client_by_user(user):
 
 async def main():
   for user in USERS:
-    client = get_tgtg_client_by_user(user)
+    client = await get_tgtg_client_by_user(user)
     offers = get_offers(client=client, user=user)
     if user_has_newer_offers(offers=offers, user=user):
       for offer in offers:
