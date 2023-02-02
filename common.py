@@ -17,8 +17,8 @@ def file_remove(fn: str):
   if os.path.exists(filename): 
     print(f'removing filename {filename}')
     os.remove(filename) 
-  else:
-    print(f'filename does not exist {filename}')
+  # else:
+  #   print(f'filename does not exist {filename}')
 
 def get_credentials_fname(user: UserData):
     return CREDENTIALS_FNAME % user.email
