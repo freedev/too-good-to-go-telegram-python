@@ -3,7 +3,7 @@ from user_data import UserData
 from constants import CREDENTIALS_FNAME, OFFERS_HASH_FNAME
 
 def normalize_filename(fn):
-    validchars = "-_.() "
+    validchars = "-_.()"
     out = ""
     for c in fn:
       if str.isalpha(c) or str.isdigit(c) or (c in validchars):
