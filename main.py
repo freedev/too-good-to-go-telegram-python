@@ -37,8 +37,6 @@ def user_has_newer_offers(offers: list, user: UserData):
   for offer in offers:
     hash_fname = OFFERS_HASH_FNAME % (user.email, hash_offer)
     if offer.availability > 0:
-      file_remove(hash_fname)
-    else:
       hash_offer = str(hashlib.md5(offer.description.encode()).hexdigest())
       if os.path.isfile(hash_fname):
         with open(hash_fname, 'r') as f:
@@ -50,6 +48,8 @@ def user_has_newer_offers(offers: list, user: UserData):
           f.write(json.dumps(hash_offer))
           offer.is_new=True
         has_offers=True
+    else:
+      file_remove(hash_fname)
   return has_offers
 
 async def send_message(chat_id, msg):
