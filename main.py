@@ -94,7 +94,7 @@ async def main():
             print(offer.description)
             await send_message(user, msg)
     else:
-      print(f'f{user.email} not logged')
+      print(f'user {user.email} not logged')
 
 if __name__ ==  '__main__':
     loop.run_until_complete(main())
