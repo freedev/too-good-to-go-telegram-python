@@ -55,8 +55,8 @@ def user_has_newer_offers(offers: list, user: UserData):
 
 async def send_message(user, msg):
   bot = Bot(TELEGRAM_TOKEN)
-  print(f'sending to user {user.email} {msg}')
-  await bot.send_message(chat_id=user.chat_id, text=msg)
+  message = await bot.send_message(chat_id=user.chat_id, text=msg)
+  print(f'sending to user {user.email} message_id {message.message_id} msg {msg}')
 
 async def get_tgtg_client_by_user(user):
   credentials_fname = get_credentials_fname(user)
