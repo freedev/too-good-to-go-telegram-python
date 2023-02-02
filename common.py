@@ -21,4 +21,4 @@ def file_remove(fn: str):
     print(f'filename does not exist {filename}')
 
 def get_credentials_fname(user: UserData):
-    credentials_fname = CREDENTIALS_FNAME % user.email
+    return CREDENTIALS_FNAME % user.email

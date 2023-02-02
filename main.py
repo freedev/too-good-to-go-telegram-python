@@ -10,7 +10,7 @@ from urllib.parse import quote
 from constants import TELEGRAM_TOKEN
 from telegram import Bot
 
-from common import file_remove, normalize_filename
+from common import file_remove, normalize_filename, get_credentials_fname
 
 loop = asyncio.get_event_loop()
 if loop == None:
@@ -59,7 +59,7 @@ async def send_message(user, msg):
   await bot.send_message(chat_id=user.chat_id, text=msg)
 
 async def get_tgtg_client_by_user(user):
-  credentials_fname = normalize_filename(CREDENTIALS_FNAME % user.email)
+  credentials_fname = get_credentials_fname(user)
   if os.path.isfile(credentials_fname):
     with open(credentials_fname, 'r') as f:
       print(f'opened file {credentials_fname}')
