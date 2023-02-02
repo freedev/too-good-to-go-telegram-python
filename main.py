@@ -34,8 +34,10 @@ def file_remove(filename: str):
 
 def user_has_newer_offers(offers: list, user: UserData):
   has_offers=False
+  print(f'offers len: {len(offers)}')
   for offer in offers:
     hash_fname = OFFERS_HASH_FNAME % (user.email, hash_offer)
+    print(f'offer: {offer.description} availability {offer.availability}')
     if offer.availability > 0:
       hash_offer = str(hashlib.md5(offer.description.encode()).hexdigest())
       if os.path.isfile(hash_fname):
