@@ -62,11 +62,13 @@ async def get_tgtg_client_by_user(user):
   credentials_fname = normalize_filename(CREDENTIALS_FNAME % user.email)
   if os.path.isfile(credentials_fname):
     with open(credentials_fname, 'r') as f:
+      print(f'opened file {credentials_fname}')
       credentials = json.load(f)
     try:
       client = TgtgClient(access_token=credentials['access_token'], refresh_token=credentials['refresh_token'], user_id=credentials['user_id'], cookie=credentials['cookie'])
       client.login()
       user.loggedin=True
+      return client
     except TgtgAPIError as e:
       file_remove(credentials_fname)
       await send_message(user, f'user {user.email} TgtgAPIError')
@@ -76,17 +78,23 @@ async def get_tgtg_client_by_user(user):
     except TgtgPollingError as e:
       file_remove(credentials_fname)
       await send_message(user, f'user {user.email} TgtgPollingError')
+  else:
+    print(f'file {credentials_fname} not found')
+  return None
 
 async def main():
   for user in USERS:
     client = await get_tgtg_client_by_user(user)
-    offers = get_offers(client=client, user=user)
-    if user_has_newer_offers(offers=offers, user=user):
-      for offer in offers:
-        if offer.is_new:
-          msg=offer.description
-          print(offer.description)
-          await send_message(user, msg)
+    if client != None:
+      offers = get_offers(client=client, user=user)
+      if user_has_newer_offers(offers=offers, user=user):
+        for offer in offers:
+          if offer.is_new:
+            msg=offer.description
+            print(offer.description)
+            await send_message(user, msg)
+    else:
+      print(f'f{user.email} not logged')
 
 if __name__ ==  '__main__':
     loop.run_until_complete(main())
