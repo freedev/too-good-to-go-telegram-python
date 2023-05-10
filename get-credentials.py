@@ -1,12 +1,10 @@
 from tgtg import TgtgClient
-from asyncio import get_event_loop
 from user_data import UserData
 from constants import CREDENTIALS_FNAME, USERS
 from common import get_credentials_fname
+import asyncio
 import json
 import os
-
-loop = get_event_loop()
 
 async def main():
   for user in USERS:
@@ -18,4 +16,4 @@ async def main():
         f.write(json.dumps(credentials))
 
 if __name__ ==  '__main__':
-    loop.run_until_complete(main())
+    asyncio.run(main())
