@@ -12,11 +12,6 @@ from telegram import Bot
 
 from common import file_remove, normalize_filename, get_credentials_fname
 
-loop = asyncio.get_event_loop()
-if loop == None:
-  loop = asyncio.new_event_loop()
-  asyncio.set_event_loop(loop)
-
 def get_offers(client: TgtgClient, user: UserData):
   offers = []
   if user.loggedin:
@@ -97,4 +92,4 @@ async def main():
       print(f'user {user.email} not logged')
 
 if __name__ ==  '__main__':
-    loop.run_until_complete(main())
+    asyncio.run(main())
