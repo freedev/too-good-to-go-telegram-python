@@ -1,2 +1,2 @@
-tgtg==0.14.0
-python-telegram-bot==20.0
+tgtg==0.18.1
+python-telegram-bot==21.9

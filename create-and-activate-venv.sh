@@ -1,5 +1,5 @@
 #!/bin/bash
-ALLOWED_PYTHON_VERSION="3.8"
+ALLOWED_PYTHON_VERSION="3.9"
 alias python3=python${ALLOWED_PYTHON_VERSION}
 alias
 

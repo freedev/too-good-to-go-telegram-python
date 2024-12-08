@@ -50,7 +50,7 @@ def user_has_newer_offers(offers: list, user: UserData):
 
 async def send_message(user, msg):
   bot = Bot(TELEGRAM_TOKEN)
-  message = await bot.send_message(chat_id=user.chat_id, text=msg)
+  message = await bot.send_message(chat_id=user.user_telegram_id, text=msg)
   print(f'sending to user {user.email} message_id {message.message_id} msg {msg}')
 
 async def get_tgtg_client_by_user(user):
@@ -60,7 +60,7 @@ async def get_tgtg_client_by_user(user):
       print(f'opened file {credentials_fname}')
       credentials = json.load(f)
     try:
-      client = TgtgClient(access_token=credentials['access_token'], refresh_token=credentials['refresh_token'], user_id=credentials['user_id'], cookie=credentials['cookie'])
+      client = TgtgClient(access_token=credentials['access_token'], refresh_token=credentials['refresh_token'], cookie=credentials['cookie'])
       client.login()
       user.loggedin=True
       return client

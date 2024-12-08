@@ -1,8 +1,8 @@
 class UserData:
-  def __init__(self, email, chat_id, lat, lon, radius):
+  def __init__(self, email, user_telegram_id, lat = None, lon = None, radius = None):
     self.loggedin = False
     self.email = email
-    self.chat_id = chat_id
+    self.user_telegram_id = user_telegram_id
     self.lat = lat
     self.lon = lon
     self.radius = radius
