@@ -1,9 +1,8 @@
 from tgtg import TgtgClient, TgtgAPIError, TgtgLoginError, TgtgPollingError
 import asyncio 
-import hashlib
 import json
 import os
-from user_data import UserData, Offer
+from user_data import UserData, Offer, EMPTY_OFFER
 from constants import CREDENTIALS_FNAME, USERS, OFFERS_HASH_FNAME, TELEGRAM_TOKEN
 from urllib.parse import quote
 
@@ -12,8 +11,8 @@ from telegram import Bot
 
 from common import file_remove, normalize_filename, get_credentials_fname
 
-def get_offers(client: TgtgClient, user: UserData):
-  offers = []
+def get_offers(client: TgtgClient, user: UserData) -> list[Offer]:
+  offers:list[Offer] = []
   if user.loggedin:
     items = client.get_items(
         # favorites_only=True,
@@ -26,32 +25,45 @@ def get_offers(client: TgtgClient, user: UserData):
       offers.append(offer)
   return offers
 
-def user_has_newer_offers(offers: list, user: UserData):
+def read_offer_from_file(hash_fname):
+    with open(hash_fname, 'r') as f:
+      old_offer:Offer = EMPTY_OFFER.clone()
+      json.load(f, object_hook = old_offer.fromJSON)
+      return old_offer
+
+def get_filename_by_user_and_offer(user:UserData, offer:Offer) -> str:
+    return normalize_filename(OFFERS_HASH_FNAME % (user.email, offer.description))
+
+def user_has_newer_offers(offers: list[Offer], user: UserData) -> bool:
   has_offers=False
   print(f'offers len: {len(offers)}')
   for offer in offers:
-    hash_fname = normalize_filename(OFFERS_HASH_FNAME % (user.email, offer.description))
+    # offer.availability = 0
+    hash_fname = get_filename_by_user_and_offer(user, offer)
     if offer.availability > 0:
       print(f'offer: {offer.description} availability {offer.availability}')
-      hash_offer = str(hashlib.md5(offer.description.encode()).hexdigest())
+      
       if os.path.isfile(hash_fname):
-        with open(hash_fname, 'r') as f:
-          old_hash_offers = json.load(f)
+        old_offer = read_offer_from_file(hash_fname)
       else:
-        old_hash_offers = ''
-      if old_hash_offers != hash_offer:
-        with open(hash_fname, 'w') as f:
-          f.write(json.dumps(hash_offer))
-          offer.is_new=True
+        old_offer:Offer = EMPTY_OFFER.clone()
+      if old_offer.hash_offer != offer.hash_offer:
+        # with open(hash_fname, 'w') as f:
+        #   f.write(offer.toJSON())
+        offer.is_new=True
         has_offers=True
-    else:
-      file_remove(hash_fname)
   return has_offers
 
 async def send_message(user, msg):
   bot = Bot(TELEGRAM_TOKEN)
   message = await bot.send_message(chat_id=user.user_telegram_id, text=msg)
   print(f'sending to user {user.email} message_id {message.message_id} msg {msg}')
+  return message
+
+async def delete_message(user, msg_id):
+  bot = Bot(TELEGRAM_TOKEN)
+  await bot.delete_message(chat_id=user.user_telegram_id, message_id=msg_id)
+  print(f'delete to user {user.email} message_id {msg_id}')
 
 async def get_tgtg_client_by_user(user):
   credentials_fname = get_credentials_fname(user)
@@ -77,6 +89,32 @@ async def get_tgtg_client_by_user(user):
     print(f'file {credentials_fname} not found')
   return None
 
+async def delete_old_offer(offer: Offer, user: UserData):
+  hash_fname = get_filename_by_user_and_offer(user, offer)
+  if offer.availability == 0:
+    if os.path.isfile(hash_fname):
+      old_offer:Offer = read_offer_from_file(hash_fname=hash_fname)
+      await delete_message(user, old_offer.msg_id)      
+      file_remove(hash_fname)
+
+def save_offer_with_user_and_message(offer: Offer, user: UserData, message):
+  hash_fname = get_filename_by_user_and_offer(user, offer)
+  if offer.availability > 0 and offer.is_new:
+    print(f'offer: {offer.description} availability {offer.availability}')
+    if os.path.isfile(hash_fname):
+      old_offer:Offer = read_offer_from_file(hash_fname)
+    else:
+      old_offer:Offer = EMPTY_OFFER.clone()
+    if old_offer.hash_offer != offer.hash_offer:
+        offer.msg_id = message.message_id
+        offer.is_new = False
+        with open(hash_fname, 'w') as f:
+          f.write(offer.toJSON())
+  # else:
+  #   old_offer = read_offer_from_file(hash_fname)
+  #   delete_message(user, old_offer.msg_id)      
+  #   file_remove(hash_fname)
+
 async def main():
   for user in USERS:
     client = await get_tgtg_client_by_user(user)
@@ -85,9 +123,12 @@ async def main():
       if user_has_newer_offers(offers=offers, user=user):
         for offer in offers:
           if offer.is_new:
-            msg=offer.description
+            msg=f'{offer.description} - availability: {offer.availability}'
             print(offer.description)
-            await send_message(user, msg)
+            message = await send_message(user, msg)
+            save_offer_with_user_and_message(offer, user, message)
+      for offer in offers:
+        await delete_old_offer(offer, user)
     else:
       print(f'user {user.email} not logged')
 
