@@ -40,9 +40,7 @@ def user_has_newer_offers(offers: list[Offer], user: UserData) -> bool:
   for offer in offers:
     # offer.availability = 0
     hash_fname = get_filename_by_user_and_offer(user, offer)
-    if offer.availability > 0:
-      print(f'offer: {offer.description} availability {offer.availability}')
-      
+    if offer.availability > 0:      
       if os.path.isfile(hash_fname):
         old_offer = read_offer_from_file(hash_fname)
       else:
@@ -100,7 +98,7 @@ async def delete_old_offer(offer: Offer, user: UserData):
 def save_offer_with_user_and_message(offer: Offer, user: UserData, message):
   hash_fname = get_filename_by_user_and_offer(user, offer)
   if offer.availability > 0 and offer.is_new:
-    print(f'offer: {offer.description} availability {offer.availability}')
+    print(f'save offer: {offer.description} availability {offer.availability}')
     if os.path.isfile(hash_fname):
       old_offer:Offer = read_offer_from_file(hash_fname)
     else:
@@ -124,7 +122,7 @@ async def main():
         for offer in offers:
           if offer.is_new:
             msg=f'{offer.description} - availability: {offer.availability}'
-            print(offer.description)
+            # print(offer.description)
             message = await send_message(user, msg)
             save_offer_with_user_and_message(offer, user, message)
       for offer in offers:
