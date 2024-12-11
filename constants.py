@@ -7,3 +7,5 @@ USERS = [
 ]
 
 TELEGRAM_TOKEN="XXXXXXX"
+
+TEMP_DIR="/tmp"
