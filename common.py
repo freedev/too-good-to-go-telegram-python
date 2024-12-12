@@ -13,7 +13,8 @@ def normalize_filename(fn):
     return out    
 
 def file_remove(fn: str):
-  filename = normalize_filename(fn)
+  os.path.basename(fn)
+  filename = os.path.join(os.path.dirname(fn), normalize_filename(os.path.basename(fn)))
   if os.path.exists(filename): 
     print(f'removing filename {filename}')
     os.remove(filename) 

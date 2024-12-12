@@ -61,8 +61,11 @@ async def send_message(user, msg):
 
 async def delete_message(user, msg_id):
   bot = Bot(TELEGRAM_TOKEN)
-  await bot.delete_message(chat_id=user.user_telegram_id, message_id=msg_id)
-  print(f'delete to user {user.email} message_id {msg_id}')
+  try:
+    await bot.delete_message(chat_id=user.user_telegram_id, message_id=msg_id)
+    print(f'delete to user {user.email} message_id {msg_id}')
+  except:
+    print(f'unable to delete the message')
 
 async def get_tgtg_client_by_user(user):
   credentials_fname = get_credentials_fname(user)
