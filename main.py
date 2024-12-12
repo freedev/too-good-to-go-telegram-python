@@ -32,7 +32,7 @@ def read_offer_from_file(hash_fname):
       return old_offer
 
 def get_filename_by_user_and_offer(user:UserData, offer:Offer) -> str:
-    filename = normalize_filename(OFFERS_HASH_FNAME % (user.email, offer.description))
+    filename = normalize_filename(OFFERS_HASH_FNAME % (user.email, offer.description, offer.availability))
     return os.path.join(TEMP_DIR, filename)
 
 def user_has_newer_offers(offers: list[Offer], user: UserData) -> bool:

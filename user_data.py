@@ -19,7 +19,7 @@ class Offer:
     self.hash_offer = self.getHash()
     self.msg_id = msg_id
   def getHash(self) -> str:
-    return str(hashlib.md5(self.description.encode()).hexdigest())
+    return str(hashlib.md5(self.description.encode()).hexdigest())+str(hashlib.md5(str(self.availability).encode()).hexdigest())
   def fromJSON(self, otherdict):
     self.__dict__.update(otherdict)
   def toJSON(self):
