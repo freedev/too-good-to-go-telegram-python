@@ -114,7 +114,7 @@ def save_offer_with_user_and_message(offer: Offer, user: UserData, message):
 
 def check_old_offer_not_online(old_offer:Offer, offers:list[Offer]):
   for offer in offers:
-    if old_offer.description == offer.description:
+    if old_offer.hash_offer == offer.hash_offer:
       return False
   return True
 
