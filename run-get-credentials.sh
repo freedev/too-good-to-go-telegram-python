@@ -20,4 +20,4 @@ cd $BASE_DIR
 source ./.venv/bin/activate
 TIMESTAMP=$(date "+%Y%m%d %H%M%S")
 echo -n "$TIMESTAMP "
-python3 get-credentials.py
+python3 get_credentials.py

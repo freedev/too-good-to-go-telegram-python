@@ -2,9 +2,10 @@ from tgtg import TgtgClient, TgtgAPIError, TgtgLoginError, TgtgPollingError
 import asyncio 
 import json
 import os
+import datetime
 from user_data import UserData, Offer, EMPTY_OFFER
-from constants import CREDENTIALS_FNAME, USERS, OFFERS_HASH_FNAME, TELEGRAM_TOKEN
-from urllib.parse import quote
+from constants import USERS, OFFERS_HASH_FNAME, TELEGRAM_TOKEN
+from get_credentials import save_credentials_from_client
 
 from constants import TELEGRAM_TOKEN, TEMP_DIR
 from telegram import Bot
@@ -70,12 +71,16 @@ async def delete_message(user, msg_id):
 async def get_tgtg_client_by_user(user):
   credentials_fname = get_credentials_fname(user)
   if os.path.isfile(credentials_fname):
+    last_modify_time = datetime.datetime.fromtimestamp(os.path.getmtime(credentials_fname))
     with open(credentials_fname, 'r') as f:
       print(f'opened file {credentials_fname}')
       credentials = json.load(f)
     try:
-      client = TgtgClient(access_token=credentials['access_token'], refresh_token=credentials['refresh_token'], cookie=credentials['cookie'])
-      client.login()
+      client = TgtgClient(access_token=credentials['access_token'], refresh_token=credentials['refresh_token'], cookie=credentials['cookie'], last_time_token_refreshed=last_modify_time)
+      if (datetime.datetime.now() - last_modify_time).seconds <= (3600 * 4):      
+        client.login()
+      else:
+        save_credentials_from_client(client, credentials_fname)
       user.loggedin=True
       return client
     except TgtgAPIError as e:
