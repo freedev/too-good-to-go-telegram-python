@@ -10,8 +10,23 @@ class UserData:
     self.lon = lon
     self.radius = radius
 
+class ErrMsg:
+  def __init__(self, description, msg_id = ''):
+    self.description = description
+    self.msg_id = msg_id
+  def fromJSON(self, otherdict):
+    self.__dict__.update(otherdict)
+  def toJSON(self):
+      return json.dumps(
+          self,
+          default=lambda o: o.__dict__, 
+          sort_keys=True,
+          indent=4)
+  def clone(self):
+    return copy.deepcopy(self)
+
 class Offer:
-  def __init__(self, offer_id, description, availability, hash_offer = '', msg_id = ''):
+  def __init__(self, offer_id, description, availability, msg_id = ''):
     self.offer_id = offer_id
     self.description = description
     self.availability = availability
@@ -31,4 +46,5 @@ class Offer:
   def clone(self):
     return copy.deepcopy(self)
 
-EMPTY_OFFER = Offer(offer_id=None, description='', availability=None, hash_offer='')
+EMPTY_OFFER = Offer(offer_id=None, description='', availability=None, msg_id = '')
+EMPTY_ERRMSG = ErrMsg(description='', msg_id = '')

@@ -3,8 +3,8 @@ import asyncio
 import json
 import os
 import datetime
-from user_data import UserData, Offer, EMPTY_OFFER
-from constants import USERS, OFFERS_HASH_FNAME, TELEGRAM_TOKEN
+from user_data import UserData, Offer, ErrMsg, EMPTY_OFFER, EMPTY_ERRMSG
+from constants import USERS, OFFERS_HASH_FNAME, ERR_MSG_FNAME, TELEGRAM_TOKEN
 from get_credentials import save_credentials_from_client
 
 from constants import TELEGRAM_TOKEN, TEMP_DIR
@@ -32,8 +32,23 @@ def read_offer_from_file(hash_fname):
       json.load(f, object_hook = old_offer.fromJSON)
       return old_offer
 
+def read_errmsg_from_file(fname):
+    with open(fname, 'r') as f:
+      old_offer:ErrMsg = EMPTY_ERRMSG.clone()
+      json.load(f, object_hook = old_offer.fromJSON)
+      return old_offer
+
+def save_errmsg_to_file(err_msg: ErrMsg):
+        filename = get_filename_by_err_msg(err_msg)
+        with open(filename, 'w') as f:
+          f.write(err_msg.toJSON())
+
 def get_filename_by_user_and_offer(user:UserData, offer:Offer) -> str:
     filename = normalize_filename(OFFERS_HASH_FNAME % (user.email, offer.description, offer.availability))
+    return os.path.join(TEMP_DIR, filename)
+
+def get_filename_by_err_msg(err_msg:ErrMsg) -> str:
+    filename = normalize_filename(ERR_MSG_FNAME % (err_msg.msg_id))
     return os.path.join(TEMP_DIR, filename)
 
 def user_has_newer_offers(offers: list[Offer], user: UserData) -> bool:
@@ -70,6 +85,7 @@ async def delete_message(user, msg_id):
 
 async def get_tgtg_client_by_user(user):
   credentials_fname = get_credentials_fname(user)
+  err_msg = None
   if os.path.isfile(credentials_fname):
     last_modify_time = datetime.datetime.fromtimestamp(os.path.getmtime(credentials_fname))
     with open(credentials_fname, 'r') as f:
@@ -85,13 +101,21 @@ async def get_tgtg_client_by_user(user):
       return client
     except TgtgAPIError as e:
       file_remove(credentials_fname)
-      await send_message(user, f'user {user.email} TgtgAPIError')
+      message = await send_message(user, f'user {user.email} TgtgAPIError {str(e)}')
+      err_msg = ErrMsg(description=str(e), msg_id=message.message_id)
+      save_errmsg_to_file(err_msg)
     except TgtgLoginError as e:
       file_remove(credentials_fname)
-      await send_message(user, f'user {user.email} TgtgLoginError')
+      message = await send_message(user, f'user {user.email} TgtgLoginError')
+      err_msg = ErrMsg(description=str(e), msg_id=message.message_id)
+      save_errmsg_to_file(err_msg)
     except TgtgPollingError as e:
       file_remove(credentials_fname)
-      await send_message(user, f'user {user.email} TgtgPollingError')
+      message = await send_message(user, f'user {user.email} TgtgPollingError')
+      err_msg = ErrMsg(description=str(e), msg_id=message.message_id)
+      save_errmsg_to_file(err_msg)
+    if err_msg:
+      print(f'err_msg {str(err_msg)}')
   else:
     print(f'file {credentials_fname} not found')
   return None
@@ -123,11 +147,20 @@ def check_old_offer_not_online(old_offer:Offer, offers:list[Offer]):
       return False
   return True
 
-async def remove_old_offer(user:UserData, offers:list[Offer]):
+async def remove_old_offery_no_availability(user:UserData, offers:list[Offer]):
   # check if existing offer has availability == 0
   for offer in offers:
     if offer.availability == 0:
       await delete_old_offer(offer, user)
+
+async def remove_old_errmsgs(user:UserData):
+  prefixed = [filename for filename in os.listdir(TEMP_DIR) if filename.startswith("errmsg-")]
+  for filename in prefixed:
+    old_error = read_errmsg_from_file(os.path.join(TEMP_DIR, filename))
+    await delete_message(user, old_error.msg_id)      
+    file_remove(filename)
+
+async def remove_old_offery_not_exist_anymore(user:UserData, offers:list[Offer]):
   # check if saved offer does not exist anymore
   prefixed = [filename for filename in os.listdir(TEMP_DIR) if filename.startswith("hash-")]
   for filename in prefixed:
@@ -135,10 +168,15 @@ async def remove_old_offer(user:UserData, offers:list[Offer]):
     if check_old_offer_not_online(old_offer, offers):
       await delete_old_offer(old_offer, user)
 
+async def remove_old_offers(user:UserData, offers:list[Offer]):
+  await remove_old_offery_no_availability(user, offers)
+  await remove_old_offery_not_exist_anymore(user, offers)
+
 async def main():
   for user in USERS:
     client = await get_tgtg_client_by_user(user)
     if client != None:
+      await remove_old_errmsgs(user)
       offers = get_offers(client=client, user=user)
       if user_has_newer_offers(offers=offers, user=user):
         for offer in offers:
@@ -147,7 +185,7 @@ async def main():
             # print(offer.description)
             message = await send_message(user, msg)
             save_offer_with_user_and_message(offer, user, message)
-      await remove_old_offer(user, offers)
+      await remove_old_offers(user, offers)
     else:
       print(f'user {user.email} not logged')
 
