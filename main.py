@@ -115,7 +115,7 @@ async def get_tgtg_client_by_user(user):
       err_msg = ErrMsg(description=str(e), msg_id=message.message_id)
       save_errmsg_to_file(err_msg)
     if err_msg:
-      print(f'err_msg {str(err_msg)}')
+      print(f'err_msg {err_msg.to_str()}')
   else:
     print(f'file {credentials_fname} not found')
   return None

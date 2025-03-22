@@ -22,6 +22,8 @@ class ErrMsg:
           default=lambda o: o.__dict__, 
           sort_keys=True,
           indent=4)
+  def to_str(self):
+    return f'msg_id {self.msg_id} description: {self.description}'
   def clone(self):
     return copy.deepcopy(self)
 
